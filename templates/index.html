@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:title" content="Nirmala's Personal Diary" />
+    <meta property="og:description" content="Welcome to my personal diary corner, my private digital sanctuary for soulful musings and heartfelt reflections. This online diary is where my thoughts and emotions find a safe haven, tucked away from the world's prying eyes. Share my innermost moments, record my life's journey, and explore my personal growth. Our intuitive platform ensures my entries are kept confidential, making it my trusted companion in this modern era. Start penning my thoughts today and let this virtual diary be the keeper of my most cherished memories." />
+    <meta property="og:image" content="{{ url_for('static', filename='icon.jpg') }}" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Merriweather&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+
+    <!-- Allow getting input Image of Bootstrap custom file type(?) -->
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+
+    <!-- The Title -->
+    <title>Nirmala's Personal Diary</title>
+  </head>
+  <Script>
+
+    $(document).ready(function(){
+      fetch_data()
+      bsCustomFileInput.init()
+    })
+
+    function save_data(){
+      let given_img_title = $('#img-title').val()
+      let given_img_desc = $('#img-desc').val()
+
+      // Validation
+      if (!given_img_title) {
+        return alert ('You need to input the image title!')
+      }
+      if (!given_img_desc) {
+        return alert ('You need to input the image description too')
+      }
+
+      // Fetching the first file
+      let given_img_file = $('#img').prop('files')[0];
+      let given_img_profile = $('#img_profile').prop('files')[0];
+
+      // Creating and initiate FormData -> replace the json data object to form data
+      let form_data = new FormData();
+
+      // Append data inside the form_data(FormData())
+      form_data.append('given_img_file', given_img_file);
+      form_data.append('given_img_profile', given_img_profile);
+      form_data.append('given_img_title', given_img_title);
+      form_data.append('given_img_desc', given_img_desc);
+
+      $.ajax({
+        type: "POST",
+        url: "/diary",
+        data: form_data,
+        // Set the server to receive data other than json type
+        // So that the server is not confused
+        contentType: false,
+        processData: false,
+        //
+        success: function(response){
+          alert(response['msg'])
+          // auto reloading the diary page
+          window.location.reload()
+        }
+      })
+    }
+
+    function fetch_data(){
+      $('#img-title').empty()
+      $('#img-desc').empty()
+
+      $.ajax({
+        type: "GET",
+        url: "/diary",
+        data: {},
+        success: function(response){
+          let datas = response['diaries']
+          for (let i = 0; i < datas.length; i++){
+            let img_title = datas[i]['title']
+            let img_desc = datas[i]['description']
+            let img_file = datas[i]['img']
+            let img_profile = datas[i]['profile']
+            let date = img_profile.slice(24,34).replace(/-/g, '.')
+
+
+            let html_temp = 
+              `<div class=" col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                  <img class="card-img-top" src="../${img_file}" alt="" />
+                  <div class="card-body">
+                    <img class="mb-2" style="height: 60px; width: 60px; border-radius: 50%" src="../${img_profile}" alt="">
+                    <h5 class="card-title">${img_title}</h5>
+                    <p class="card-text">${img_desc}</p>
+                    <h6 class="card-subtitle mb-2 text-muted">${date}</h6>
+                  </div>
+                </div>
+              </div>`
+            
+
+            $('#diary_card').append(html_temp)
+          }
+        }
+      })
+    }
+  </Script>
+  <body>
+    <div class="container pt-5">
+      <!-- The Jumbotron -->
+      <div class="p-5 mb-4 rounded-3" style="background-color: rgb(255, 230, 230);">
+        <div class="container-fluid py-5">
+          <h1 class="display-5 fw-bold">Personal Diary</h1>
+          <!-- The Form -->
+          <div class="input-group flex mb-3 custom-file mt-4">
+            <input class="form-control" type="file" id="img" />
+          </div>
+          <div class="input-group mb-3 custom-file">
+            <input class="form-control" type="file" id="img_profile" />
+          </div>
+          <div class="mb-3">
+            <input type="text" class="form-control" id="img-title" placeholder="Image title">
+          </div>
+          <div class="mb-3">
+            <textarea class="form-control" rows="5" placeholder="Image description" id="img-desc"></textarea>
+          </div>
+          <button onclick="save_data()" class="btn btn-secondary btn-md" type="button">Save</button>
+        </div>
+      </div>
+
+      <!-- The Cards -->
+      <div class="row justify-center" id="diary_card">
+        
+      </div>
+    </div>
+  </body>
+</html>
