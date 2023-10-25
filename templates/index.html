@@ -31,6 +31,18 @@
     })
 
     function save_data(){
+      // Fetching the first file
+      let given_img_file = $('#img').prop('files')[0];
+      let given_img_profile = $('#img_profile').prop('files')[0];
+
+      // Validation
+      if (!given_img_file){
+        return alert ('Yo need to Input the diary Image')
+      }
+      if (!given_img_profile){
+        return alert ('Yo need to Input the diary Profile Image')
+      }
+      
       let given_img_title = $('#img-title').val()
       let given_img_desc = $('#img-desc').val()
 
@@ -41,10 +53,6 @@
       if (!given_img_desc) {
         return alert ('You need to input the image description too')
       }
-
-      // Fetching the first file
-      let given_img_file = $('#img').prop('files')[0];
-      let given_img_profile = $('#img_profile').prop('files')[0];
 
       // Creating and initiate FormData -> replace the json data object to form data
       let form_data = new FormData();
